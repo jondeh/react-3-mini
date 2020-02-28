@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import logo from './mainStreetAuto.svg';
 import axios from 'axios';
 import './App.css';
+import DropDown from './Components/DropDown'
 
 // Toast notification dependencies
 import { ToastContainer, toast } from 'react-toastify';
@@ -12,7 +13,8 @@ class App extends Component {
 
     this.state = {
       vehiclesToDisplay: [],
-      buyersToDisplay: []
+      buyersToDisplay: [],
+      newVehiclesToSelect: [1]
     };
 
     this.getVehicles = this.getVehicles.bind(this);
@@ -29,8 +31,12 @@ class App extends Component {
   }
 
   getVehicles() {
-    // axios (GET)
-    // setState with response -> vehiclesToDisplay
+    axios.get('https://joes-autos.herokuapp.com/api/vehicles')
+    .then(response => {
+      toast.success('HA! GOT EM!')
+      this.setState({vehiclesToDisplay: response.data})
+    })
+    .catch(() => toast.error('NICE TRY BUCKO'))
   }
 
   getPotentialBuyers() {
@@ -39,12 +45,23 @@ class App extends Component {
   }
 
   sellCar(id) {
-    // axios (DELETE)
-    // setState with response -> vehiclesToDisplay
+    axios.delete(`https://joes-autos.herokuapp.com/api/vehicles/${id}`)
+    .then(response => {
+      toast.success('BALETED!')
+      this.setState({vehiclesToDisplay: response.data.vehicles})
+    })
+    .catch(() => toast.error('FAILED TO BALETE!'))
   }
 
   filterByMake() {
     let make = this.selectedMake.value;
+
+    axios.get(`https://joes-autos.herokuapp.com/api/vehicles/?make=${make}`)
+    .then(response => {
+      toast.success('MAKE IT RAIN')
+      this.setState({vehiclesToDisplay: response.data})
+    })
+    .catch(() => toast.error('failed to make it rain'))
 
     // axios (GET)
     // setState with response -> vehiclesToDisplay
@@ -58,8 +75,12 @@ class App extends Component {
   }
 
   updatePrice(priceChange, id) {
-    // axios (PUT)
-    // setState with response -> vehiclesToDisplay
+    axios.put(`https://joes-autos.herokuapp.com/api/vehicles/${id}/${priceChange}`)
+    .then(response => {
+      toast.success('Upddaaaaaaated!')
+      this.setState({vehiclesToDisplay: response.data.vehicles})
+    })
+      .catch(() => toast.error('Failed to update!'))
   }
 
   addCar() {
@@ -71,8 +92,18 @@ class App extends Component {
       price: this.price.value
     };
 
-    // axios (POST)
-    // setState with response -> vehiclesToDisplay
+    console.log(newCar.make)
+    let newArr = []
+    console.log(newArr)
+    this.setState({newVehiclesToSelect: newArr.push(newCar.make)})
+    console.log(this.state.newCarToSelect)
+
+    axios.post('https://joes-autos.herokuapp.com/api/vehicles', newCar)
+    .then(response => {
+      toast.success('Added car')
+      this.setState({vehiclesToDisplay: response.data.vehicles})
+    })
+    .catch(() => toast.error('Failed to add car'))
   }
 
   addBuyer() {
@@ -200,7 +231,15 @@ class App extends Component {
             Get All Vehicles
           </button>
 
-          <select
+
+            <DropDown 
+                  vehiclesToDisplay={this.state.vehiclesToDisplay}
+                  buyersToDisplay={this.state.buyersToDisplay}
+                  newVehiclesToDisplay={this.state.newVehiclesToDisplay}
+                  addCarFn={this.addCar}
+                  FilterByMakeFn={this.FilterByMake} />
+
+          {/* <select
             onChange={this.filterByMake}
             ref={selectedMake => {
               this.selectedMake = selectedMake;
@@ -220,7 +259,8 @@ class App extends Component {
             <option value="Cadillac">Cadillac</option>
             <option value="Dodge">Dodge</option>
             <option value="Chrysler">Chrysler</option>
-          </select>
+            <option value="New">{this.state.newVehiclesToSelect[this.state.newVehiclesToSelect.length-1]}</option>
+          </select> */}
 
           <select
             ref={selectedColor => {
